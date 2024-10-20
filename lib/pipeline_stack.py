@@ -1,23 +1,26 @@
 # Copyright Amazon.com and its affiliates; all rights reserved. This file is Amazon Web Services Content and may not be duplicated or distributed without permission.
 # SPDX-License-Identifier: MIT-0
 import aws_cdk as cdk
-from constructs import Construct
-import aws_cdk.pipelines as Pipelines
-import aws_cdk.aws_s3 as s3
+import aws_cdk.aws_codebuild as codebuild
+import aws_cdk.aws_codepipeline as codepipeline
 import aws_cdk.aws_iam as iam
 import aws_cdk.aws_logs as logs
-import aws_cdk.aws_codepipeline as CodePipeline
-import aws_cdk.aws_codepipeline_actions as CodePipelineActions
-import aws_cdk.aws_codebuild as CodeBuild
-import aws_cdk.aws_codecommit as CodeCommit
+import aws_cdk.aws_s3 as s3
+import aws_cdk.pipelines as pipelines
 from cdk_nag import AwsSolutionsChecks, NagSuppressions
+from constructs import Construct
 
 from .configuration import (
-    ACCOUNT_ID, CODECOMMIT_MIRROR_REPOSITORY_NAME, DEPLOYMENT, PROD, TEST,
-	GITHUB_REPOSITORY_NAME, GITHUB_REPOSITORY_OWNER_NAME, GITHUB_TOKEN,
-    CODESTAR_CONNECTION_ARN, CODESTAR_REPOSITORY_OWNER_NAME, CODESTAR_REPOSITORY_NAME,
-	CODECOMMIT_REPOSITORY_NAME, CODECOMMIT_MIRROR_REPOSITORY_NAME,
-    get_logical_id_prefix, get_resource_name_prefix, get_all_configurations
+    ACCOUNT_ID,
+    DEPLOYMENT,
+    GITHUB_REPOSITORY_NAME,
+    GITHUB_REPOSITORY_OWNER_NAME,
+    GITHUB_TOKEN,
+    PROD,
+    TEST,
+    get_all_configurations,
+    get_logical_id_prefix,
+    get_resource_name_prefix,
 )
 from .pipeline_deploy_stage import PipelineDeployStage
 
@@ -55,6 +58,7 @@ class PipelineStack(cdk.Stack):
         self.logical_id_prefix = get_logical_id_prefix()
         self.resource_name_prefix = get_resource_name_prefix()
         self.target_branch = target_branch
+        self.target_environment = target_environment
 
         if (target_environment == PROD or target_environment == TEST):
             self.removal_policy = cdk.RemovalPolicy.RETAIN
@@ -84,12 +88,12 @@ class PipelineStack(cdk.Stack):
         target_aws_env
             The CDK env variables used for stacks in the deploy stage
         """
-        code_build_env = CodeBuild.BuildEnvironment(
-            build_image=CodeBuild.LinuxBuildImage.STANDARD_7_0,
+        code_build_env = codebuild.BuildEnvironment(
+            build_image=codebuild.LinuxBuildImage.STANDARD_7_0,
             privileged=False
         )
-        
-        code_build_opt = Pipelines.CodeBuildOptions(
+
+        code_build_opt = pipelines.CodeBuildOptions(
             build_environment=code_build_env,
             role_policy=[
                 iam.PolicyStatement(
@@ -114,39 +118,52 @@ class PipelineStack(cdk.Stack):
             ]
         )
 
-        pipeline = Pipelines.CodePipeline(
+        code_pipeline = codepipeline.Pipeline(
             self,
             f'{target_environment}{self.logical_id_prefix}EtlPipeline',
             pipeline_name=f'{target_environment.lower()}-{self.resource_name_prefix}-etl-pipeline',
-            code_build_defaults=code_build_opt,
-            self_mutation=True,
-            synth=Pipelines.ShellStep(
-                'Synth',
-                input=self.get_codepipeline_source(),
-                commands=[
-                    'npm install -g aws-cdk',
-                    'python -m pip install -r requirements.txt --root-user-action=ignore',
-                    'cdk synth'
-                ],
-            ),
-            cross_account_keys=True
+            cross_account_keys=True,
+            pipeline_type=codepipeline.PipelineType.V2,
+            execution_mode=codepipeline.ExecutionMode.QUEUED,
+            artifact_bucket=self.get_artifact_bucket(),
         )
 
-        pipeline_deploy_stage = PipelineDeployStage(
-                self,
-                target_environment,
-                target_environment=target_environment,
-                env=cdk.Environment(
-                    account=target_aws_env['account'],
-                    region=target_aws_env['region']
-                )
-            )
+        synth_step=pipelines.ShellStep(
+            'Synth',
+            input=self.get_codepipeline_source(),
+            commands=[
+                'npm install -g aws-cdk',
+                'python -m pip install -r requirements.txt --root-user-action=ignore',
+                'cdk synth'
+            ],
+        )
+
+        pipeline = pipelines.CodePipeline(
+            self,
+            f'{target_environment}{self.logical_id_prefix}EtlCodePipeline',
+            #pipeline_name=f'{target_environment.lower()}-{self.resource_name_prefix}-etl-pipeline',
+            code_build_defaults=code_build_opt,
+            self_mutation=True,
+            synth=synth_step,
+            code_pipeline=code_pipeline,
+            #cross_account_keys=True
+        )
+
+        # JL pipeline_deploy_stage = PipelineDeployStage(
+        #         self,
+        #         target_environment,
+        #         target_environment=target_environment,
+        #         env=cdk.Environment(
+        #             account=target_aws_env['account'],
+        #             region=target_aws_env['region']
+        #         )
+        #     )
 
         # Enable CDK Nag for environment stacks before adding to
         # pipeline, which are deployed with CodePipeline
-        cdk.Aspects.of(pipeline_deploy_stage).add(AwsSolutionsChecks())
+        # JL cdk.Aspects.of(pipeline_deploy_stage).add(AwsSolutionsChecks())
 
-        pipeline.add_stage(pipeline_deploy_stage)
+        # JL pipeline.add_stage(pipeline_deploy_stage)
 
         # Force Pipeline construct creation during synth so we can add
         # Nag Supressions. Artifact bucket policies, and access Build stages
@@ -156,9 +173,9 @@ class PipelineStack(cdk.Stack):
         # that write to CloudWatch logs
         for stage in pipeline.pipeline.stages:
             for action in stage.actions:
-                if action.action_properties.category == CodePipeline.ActionCategory.BUILD:
+                if action.action_properties.category == codepipeline.ActionCategory.BUILD:
                     logs.LogGroup(
-                        self, 
+                        self,
                         id=f'CodeBuildAction{action.action_properties.action_name}LogGroup',
                         # Name the log after the project name so it matches where CodeBuild writes
                         # resource object is a PipelineProject
@@ -190,8 +207,14 @@ class PipelineStack(cdk.Stack):
             },
         ], apply_to_children=True)
 
+        NagSuppressions.add_resource_suppressions(code_pipeline, [
+            {
+                'id': 'AwsSolutions-IAM5',
+                'reason': 'Wildcard IAM permissions are used by auto-created Codepipeline policies and custom policies to allow flexible creation of resources'
+            },
+        ], apply_to_children=True)
 
-    def get_codepipeline_source(self) -> Pipelines.CodePipelineSource:
+    def get_codepipeline_source(self) -> pipelines.CodePipelineSource:
         """Based on configuration, create a CodePipeline source object for the selected repository type
 
         Returns
@@ -200,41 +223,34 @@ class PipelineStack(cdk.Stack):
             CodePipeline source repository object
         """
         if self.mappings[DEPLOYMENT][GITHUB_REPOSITORY_NAME]:
-            # Github
-            return Pipelines.CodePipelineSource.git_hub(
-                    repo_string=f'{self.mappings[DEPLOYMENT][GITHUB_REPOSITORY_OWNER_NAME]}/'
-                        f'{self.mappings[DEPLOYMENT][GITHUB_REPOSITORY_NAME]}',
-                    branch=self.target_branch,
-                    authentication=cdk.SecretValue.secrets_manager(
-                        self.mappings[DEPLOYMENT][GITHUB_TOKEN]
-                    ),
-                    trigger=CodePipelineActions.GitHubTrigger.POLL,
-                )
-        if self.mappings[DEPLOYMENT][CODESTAR_REPOSITORY_NAME]:
             # CodeStar
-            return Pipelines.CodePipelineSource.connection(
-                repo_string=f'{self.mappings[DEPLOYMENT][CODESTAR_REPOSITORY_OWNER_NAME]}/' \
-                    f'{self.mappings[DEPLOYMENT][CODESTAR_REPOSITORY_NAME]}',
+            return pipelines.CodePipelineSource.connection(
+                action_name="Source",
+                repo_string=f'{self.mappings[DEPLOYMENT][GITHUB_REPOSITORY_OWNER_NAME]}/'
+                    f'{self.mappings[DEPLOYMENT][GITHUB_REPOSITORY_NAME]}',
                 branch=self.target_branch,
-                connection_arn=self.mappings[DEPLOYMENT][CODESTAR_CONNECTION_ARN],
+                connection_arn="arn:aws:codestar-connections:us-east-1:787127824249:connection/ac69c4b3-c806-4b73-9bb8-df7c3a9b6162"
             )
-        else:
-            # CodeCommit
-            if self.mappings[DEPLOYMENT][CODECOMMIT_MIRROR_REPOSITORY_NAME]:
-                repo = CodeCommit.Repository.from_repository_name(
-                    self,
-                    f'{DEPLOYMENT}{self.logical_id_prefix}InfrastructureMirrorRepository',
-                    repository_name=self.mappings[DEPLOYMENT][CODECOMMIT_MIRROR_REPOSITORY_NAME],
-                )
-            else:
-                repo = CodeCommit.Repository.from_repository_name(
-                    self,
-                    f'{DEPLOYMENT}{self.logical_id_prefix}InfrastructureRepository',
-                    repository_name=self.mappings[DEPLOYMENT][CODECOMMIT_REPOSITORY_NAME],
-                )
 
-            return Pipelines.CodePipelineSource.code_commit(
-                repository=repo,
-                branch=self.target_branch,
-                code_build_clone_output=True,
-            )
+    def get_artifact_bucket(self) -> s3.Bucket:
+        """Returns the artifact bucket for the pipeline
+
+        Returns
+        -------
+        s3.Bucket
+            Returns the artifact bucket for the pipeline
+        """
+        return s3.Bucket(
+            self,
+            id=f'{self.target_environment}{self.logical_id_prefix}EtlPipeline-Artifact',
+            bucket_name=f'{self.target_environment.lower()}-{self.resource_name_prefix}-etl-pipeline-artifact',
+            access_control=s3.BucketAccessControl.PRIVATE,
+            block_public_access=s3.BlockPublicAccess.BLOCK_ALL,
+            enforce_ssl=True,
+            bucket_key_enabled=True,
+            encryption=s3.BucketEncryption.KMS,
+            public_read_access=False,
+            removal_policy=self.removal_policy,
+            versioned=True,
+            object_ownership=s3.ObjectOwnership.OBJECT_WRITER,
+        )

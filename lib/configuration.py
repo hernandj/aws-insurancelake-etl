@@ -1,6 +1,7 @@
 # Copyright Amazon.com and its affiliates; all rights reserved. This file is Amazon Web Services Content and may not be duplicated or distributed without permission.
 # SPDX-License-Identifier: MIT-0
 import re
+
 import boto3
 
 # Environments (targeted at accounts)
@@ -15,11 +16,11 @@ ENVIRONMENT = 'environment'
 # Manual Inputs
 GITHUB_REPOSITORY_OWNER_NAME = 'github_repository_owner_name'
 GITHUB_REPOSITORY_NAME = 'github_repository_name'
-CODESTAR_CONNECTION_ARN = 'codestar_connection_arn'
-CODESTAR_REPOSITORY_OWNER_NAME = 'codestar_repository_owner_name'
-CODESTAR_REPOSITORY_NAME = 'codestar_repository_name'
-CODECOMMIT_REPOSITORY_NAME = 'codecommit_repository_name'
-CODECOMMIT_MIRROR_REPOSITORY_NAME = 'codecommit_mirror_repository_name'
+
+# CODESTAR_CONNECTION_ARN = 'codestar_connection_arn'
+# CODESTAR_REPOSITORY_OWNER_NAME = 'codestar_repository_owner_name'
+# CODESTAR_REPOSITORY_NAME = 'codestar_repository_name'
+
 ACCOUNT_ID = 'account_id'
 REGION = 'region'
 VPC_CIDR = 'vpc_cidr'
@@ -81,33 +82,14 @@ def get_local_configuration(environment: str, local_mapping: dict = None) -> dic
         local_mapping = {
             DEPLOYMENT: {
                 ACCOUNT_ID: active_account_id,
-                REGION: 'us-east-2',
+                REGION: 'us-east-1',
 
                 # If you use GitHub / GitHub Enterprise, this will be the organization name
-                GITHUB_REPOSITORY_OWNER_NAME: '',
+                GITHUB_REPOSITORY_OWNER_NAME: 'hernandj',
 
                 # Use your forked Github repo here!
                 # Leave empty if you do not use Github
-                GITHUB_REPOSITORY_NAME: '',
-
-                # If you use Bitbucket Cloud or any other supported Codestar provider, specify the
-                # Codestar connection ARN
-                CODESTAR_CONNECTION_ARN: '',
-
-                # Codestar repository owner or workspace name if using Bitbucket Cloud
-                CODESTAR_REPOSITORY_OWNER_NAME: '',
-
-                # Leave empty if you do not use Codestar
-                CODESTAR_REPOSITORY_NAME: '',
-
-                # Use only if your repository is already in CodecCommit, otherwise leave empty!
-                # Use your CodeCommit repo name here
-                CODECOMMIT_REPOSITORY_NAME: '',
-
-                # Use only if you do NOT use Github or CodeCommit and need to mirror your repository
-                # Name your CodeCommit mirror repo here (recommend matching your external repo)
-                # Leave empty if you use Github or your repository is in CodeCommit already
-                CODECOMMIT_MIRROR_REPOSITORY_NAME: 'aws-insurancelake-etl',
+                GITHUB_REPOSITORY_NAME: 'aws-insurancelake-etl',
 
                 # This is used in the Logical Id of CloudFormation resources.
                 # We recommend Capital case for consistency, e.g. DataLakeCdkBlog
@@ -120,21 +102,21 @@ def get_local_configuration(environment: str, local_mapping: dict = None) -> dic
             },
             DEV: {
                 ACCOUNT_ID: active_account_id,
-                REGION: 'us-east-2',
+                REGION: 'us-east-1',
                 LINEAGE: True,
                 # VPC_CIDR: '10.20.0.0/24',
-                CODE_BRANCH: 'develop',
+                CODE_BRANCH: 'development',
             },
             TEST: {
                 ACCOUNT_ID: active_account_id,
-                REGION: 'us-east-2',
+                REGION: 'us-east-1',
                 LINEAGE: True,
                 # VPC_CIDR: '10.10.0.0/24',
                 CODE_BRANCH: 'test',
             },
             PROD: {
                 ACCOUNT_ID: active_account_id,
-                REGION: 'us-east-2',
+                REGION: 'us-east-1',
                 LINEAGE: True,
                 # VPC_CIDR: '10.0.0.0/24',
                 CODE_BRANCH: 'main',
