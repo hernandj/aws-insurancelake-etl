@@ -1,16 +1,15 @@
 # Copyright Amazon.com and its affiliates; all rights reserved. This file is Amazon Web Services Content and may not be duplicated or distributed without permission.
 # SPDX-License-Identifier: MIT-0
-from test.boto_mocking_helper import *
-
 import aws_cdk as cdk
-import pytest
 from aws_cdk.assertions import Template
 
 import lib.configuration as configuration
 from lib.configuration import DEV, PROD, TEST
-from lib.dynamodb_stack import DynamoDbStack
-from lib.glue_stack import GlueStack
-from lib.step_functions_stack import StepFunctionsStack
+from lib.stacks.dynamodb_stack import DynamoDbStack
+from lib.stacks.glue_stack import GlueStack
+from lib.stacks.step_functions_stack import StepFunctionsStack
+
+from .boto_mocking_helper import *
 
 
 def test_resource_types_and_counts(monkeypatch):

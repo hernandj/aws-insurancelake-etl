@@ -10,19 +10,18 @@ import aws_cdk.pipelines as pipelines
 from cdk_nag import AwsSolutionsChecks, NagSuppressions
 from constructs import Construct
 
-from .configuration import (
+from ..configuration import (
     ACCOUNT_ID,
     DEPLOYMENT,
     GITHUB_REPOSITORY_NAME,
     GITHUB_REPOSITORY_OWNER_NAME,
-    GITHUB_TOKEN,
     PROD,
     TEST,
     get_all_configurations,
     get_logical_id_prefix,
     get_resource_name_prefix,
 )
-from .pipeline_deploy_stage import PipelineDeployStage
+from ..stages.pipeline_deploy_stage import PipelineDeployStage
 
 
 class PipelineStack(cdk.Stack):
@@ -149,21 +148,21 @@ class PipelineStack(cdk.Stack):
             #cross_account_keys=True
         )
 
-        # JL pipeline_deploy_stage = PipelineDeployStage(
-        #         self,
-        #         target_environment,
-        #         target_environment=target_environment,
-        #         env=cdk.Environment(
-        #             account=target_aws_env['account'],
-        #             region=target_aws_env['region']
-        #         )
-        #     )
+        pipeline_deploy_stage = PipelineDeployStage(
+            self,
+            target_environment,
+            target_environment=target_environment,
+            env=cdk.Environment(
+                account=target_aws_env['account'],
+                region=target_aws_env['region']
+            )
+        )
 
         # Enable CDK Nag for environment stacks before adding to
         # pipeline, which are deployed with CodePipeline
-        # JL cdk.Aspects.of(pipeline_deploy_stage).add(AwsSolutionsChecks())
+        cdk.Aspects.of(pipeline_deploy_stage).add(AwsSolutionsChecks())
 
-        # JL pipeline.add_stage(pipeline_deploy_stage)
+        pipeline.add_stage(pipeline_deploy_stage)
 
         # Force Pipeline construct creation during synth so we can add
         # Nag Supressions. Artifact bucket policies, and access Build stages

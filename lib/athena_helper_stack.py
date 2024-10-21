@@ -1,22 +1,28 @@
 # Copyright Amazon.com and its affiliates; all rights reserved. This file is Amazon Web Services Content and may not be duplicated or distributed without permission.
 # SPDX-License-Identifier: MIT-0
-from constructs import Construct
 import aws_cdk as cdk
-import aws_cdk.aws_s3 as s3
 import aws_cdk.aws_athena as athena
+import aws_cdk.aws_s3 as s3
 from cdk_nag import NagSuppressions
+from constructs import Construct
 
-from .stack_import_helper import ImportedBuckets
 from .configuration import (
-    DEV, PROD, TEST, get_logical_id_prefix, get_resource_name_prefix, get_environment_configuration,
+    DEV,
+    PROD,
+    TEST,
+    get_environment_configuration,
+    get_logical_id_prefix,
+    get_resource_name_prefix,
 )
+from .stack_import_helper import ImportedBuckets
+
 
 class AthenaHelperStack(cdk.Stack):
     def __init__(
-            self, 
-            scope: Construct, 
-            construct_id: str, 
-            target_environment: str, 
+            self,
+            scope: Construct,
+            construct_id: str,
+            target_environment: str,
             glue_scripts_temp_bucket: s3.Bucket,
             **kwargs
         ):

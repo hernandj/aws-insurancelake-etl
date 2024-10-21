@@ -1,14 +1,20 @@
 # Copyright Amazon.com and its affiliates; all rights reserved. This file is Amazon Web Services Content and may not be duplicated or distributed without permission.
 # SPDX-License-Identifier: MIT-0
-from constructs import Construct
 import aws_cdk as cdk
 import aws_cdk.aws_dynamodb as dynamodb
+from constructs import Construct
 
-from .stack_import_helper import ImportedBuckets
-from .configuration import (
-    DEV, PROD, TEST, LINEAGE,
-    get_logical_id_prefix, get_resource_name_prefix, get_environment_configuration,
+from ..configuration import (
+    DEV,
+    LINEAGE,
+    PROD,
+    TEST,
+    get_environment_configuration,
+    get_logical_id_prefix,
+    get_resource_name_prefix,
 )
+from ..stack_import_helper import ImportedBuckets
+
 
 class DynamoDbStack(cdk.Stack):
     def __init__(self, scope: Construct, construct_id: str, target_environment: str, **kwargs):

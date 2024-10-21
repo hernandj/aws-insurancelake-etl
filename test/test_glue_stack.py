@@ -18,8 +18,8 @@ from lib.configuration import (
     TEST,
     VPC_CIDR,
 )
-from lib.dynamodb_stack import DynamoDbStack
-from lib.glue_stack import GlueStack
+from lib.stacks.dynamodb_stack import DynamoDbStack
+from lib.stacks.glue_stack import GlueStack
 
 
 def mock_get_local_configuration_with_vpc(environment, local_mapping = None):

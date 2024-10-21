@@ -19,7 +19,7 @@ from lib.configuration import (
     RESOURCE_NAME_PREFIX,
     TEST,
 )
-from lib.pipeline_stack import PipelineStack
+from lib.stacks.pipeline_stack import PipelineStack
 
 mock_configuration_base = {
     ACCOUNT_ID: mock_account_id,
@@ -113,7 +113,7 @@ def test_cross_region_number_of_stacks(monkeypatch):
         )
 
     # 3 infrastructure stacks (dev, test, prod), 3 pipeline support stacks
-    assert len(app.node.children) == 3, 'Unexpected number of stacks' # 6 stacks total
+    assert len(app.node.children) == 6, 'Unexpected number of stacks' # 6 stacks total
 
 
 def test_cross_account_number_of_stacks(monkeypatch):

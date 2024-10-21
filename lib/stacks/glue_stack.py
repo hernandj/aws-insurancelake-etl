@@ -1,21 +1,29 @@
 # Copyright Amazon.com and its affiliates; all rights reserved. This file is Amazon Web Services Content and may not be duplicated or distributed without permission.
 # SPDX-License-Identifier: MIT-0
+import os
+
 import aws_cdk as cdk
-from constructs import Construct
-import aws_cdk.aws_s3 as s3
-import aws_cdk.aws_logs as logs
+import aws_cdk.aws_dynamodb as dynamodb
 import aws_cdk.aws_glue as glue
 import aws_cdk.aws_iam as iam
 import aws_cdk.aws_kms as kms
-import aws_cdk.aws_dynamodb as dynamodb
+import aws_cdk.aws_logs as logs
+import aws_cdk.aws_s3 as s3
 import aws_cdk.aws_s3_deployment as s3_deployment
-import os
 from cdk_nag import NagSuppressions
+from constructs import Construct
 
-from .stack_import_helper import ImportedBuckets, ImportedVpc
-from .configuration import (
-    DEV, PROD, TEST, get_logical_id_prefix, get_resource_name_prefix, get_environment_configuration,
+from lib.stack_import_helper import ImportedBuckets, ImportedVpc
+
+from ..configuration import (
+    DEV,
+    PROD,
+    TEST,
+    get_environment_configuration,
+    get_logical_id_prefix,
+    get_resource_name_prefix,
 )
+
 
 class GlueStack(cdk.Stack):
     def __init__(

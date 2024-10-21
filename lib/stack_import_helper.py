@@ -1,16 +1,30 @@
 # Copyright Amazon.com and its affiliates; all rights reserved. This file is Amazon Web Services Content and may not be duplicated or distributed without permission.
 # SPDX-License-Identifier: MIT-0
 import aws_cdk as cdk
-import aws_cdk.aws_s3 as s3
 import aws_cdk.aws_ec2 as ec2
 import aws_cdk.aws_kms as kms
+import aws_cdk.aws_s3 as s3
 
 from .configuration import (
-    AVAILABILITY_ZONE_1, AVAILABILITY_ZONE_2, AVAILABILITY_ZONE_3, 
-    ROUTE_TABLE_1, ROUTE_TABLE_2, ROUTE_TABLE_3,
-	SUBNET_ID_1, SUBNET_ID_2, SUBNET_ID_3, SHARED_SECURITY_GROUP_ID, VPC_ID, VPC_CIDR,
-    S3_RAW_BUCKET, S3_CONFORMED_BUCKET, S3_PURPOSE_BUILT_BUCKET, S3_ACCESS_LOG_BUCKET, S3_KMS_KEY,
+    AVAILABILITY_ZONE_1,
+    AVAILABILITY_ZONE_2,
+    AVAILABILITY_ZONE_3,
+    ROUTE_TABLE_1,
+    ROUTE_TABLE_2,
+    ROUTE_TABLE_3,
+    S3_ACCESS_LOG_BUCKET,
+    S3_CONFORMED_BUCKET,
+    S3_KMS_KEY,
+    S3_PURPOSE_BUILT_BUCKET,
+    S3_RAW_BUCKET,
+    SHARED_SECURITY_GROUP_ID,
+    SUBNET_ID_1,
+    SUBNET_ID_2,
+    SUBNET_ID_3,
+    VPC_CIDR,
+    VPC_ID,
 )
+
 
 class ImportedBuckets():
      def __init__(

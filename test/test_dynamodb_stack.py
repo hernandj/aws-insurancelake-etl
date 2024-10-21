@@ -1,17 +1,14 @@
 # Copyright Amazon.com and its affiliates; all rights reserved. This file is Amazon Web Services Content and may not be duplicated or distributed without permission.
 # SPDX-License-Identifier: MIT-0
-import pytest
-import aws_cdk as cdk
-from aws_cdk.assertions import Template, Match
-
 from test.boto_mocking_helper import *
-from lib.dynamodb_stack import DynamoDbStack
+
+import aws_cdk as cdk
+import pytest
+from aws_cdk.assertions import Match, Template
 
 import lib.configuration as configuration
-from lib.configuration import (
-    DEV, PROD, TEST, ACCOUNT_ID, REGION, LOGICAL_ID_PREFIX, RESOURCE_NAME_PREFIX, LINEAGE,
-)
-
+from lib.configuration import ACCOUNT_ID, DEV, LINEAGE, LOGICAL_ID_PREFIX, PROD, REGION, RESOURCE_NAME_PREFIX, TEST
+from lib.stacks.dynamodb_stack import DynamoDbStack
 
 mock_environment = {
 	ACCOUNT_ID: mock_account_id,

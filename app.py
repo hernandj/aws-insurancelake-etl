@@ -17,7 +17,7 @@ from lib.configuration import (
     get_all_configurations,
     get_logical_id_prefix,
 )
-from lib.pipeline_stack import PipelineStack
+from lib.stacks.pipeline_stack import PipelineStack
 from lib.tagging import tag
 
 app = cdk.App()

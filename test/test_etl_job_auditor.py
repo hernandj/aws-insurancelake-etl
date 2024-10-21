@@ -1,9 +1,11 @@
 # Copyright Amazon.com and its affiliates; all rights reserved. This file is Amazon Web Services Content and may not be duplicated or distributed without permission.
 # SPDX-License-Identifier: MIT-0
+import json
+
+import boto3
 import pytest
 from moto import mock_aws
-import boto3
-import json
+
 from lib.etl_job_auditor.lambda_handler import lambda_handler
 
 mock_region = 'us-east-1'
@@ -12,36 +14,36 @@ test_success_execution_id = '3b278a83-8b04-468a-983e-3749b6609dcb'
 test_failure_execution_id = '884423e7-2dba-4597-9907-371d1f424e16'
 
 state_machine_success_event = {
-    'eventTime': '2023-01-02T23:00:00.000Z', 
+    'eventTime': '2023-01-02T23:00:00.000Z',
     'Input': {
-        'execution_id': test_success_execution_id, 
+        'execution_id': test_success_execution_id,
         'taskresult': {
-    		'AllocatedCapacity': 50, 
-            'Attempt': 0, 
-            'CompletedOn': 1675701338733, 
-            'ExecutionTime': 30, 
-            'GlueVersion': '3.0', 
-            'Id': 'jr_5ae791637444c02e3c26b8c97750446cbead7bf184494f2aaaf5be713e7e55f6', 
-            'JobName': 'test_run_success', 
-            'JobRunState': 'SUCCEEDED', 
-            'LastModifiedOn': 1675701338733, 
-            'LogGroupName': '/aws-glue/jobs', 
-            'MaxCapacity': 50.0, 
-            'NumberOfWorkers': 50, 
-            'PredecessorRuns': [], 
-            'StartedOn': 1675701301319, 
-            'Timeout': 2880, 
+    		'AllocatedCapacity': 50,
+            'Attempt': 0,
+            'CompletedOn': 1675701338733,
+            'ExecutionTime': 30,
+            'GlueVersion': '3.0',
+            'Id': 'jr_5ae791637444c02e3c26b8c97750446cbead7bf184494f2aaaf5be713e7e55f6',
+            'JobName': 'test_run_success',
+            'JobRunState': 'SUCCEEDED',
+            'LastModifiedOn': 1675701338733,
+            'LogGroupName': '/aws-glue/jobs',
+            'MaxCapacity': 50.0,
+            'NumberOfWorkers': 50,
+            'PredecessorRuns': [],
+            'StartedOn': 1675701301319,
+            'Timeout': 2880,
             'WorkerType': 'G.1X'
         }
     }
 }
 
 state_machine_failure_event = {
-    'eventTime': '2023-01-03T23:00:00.000Z', 
+    'eventTime': '2023-01-03T23:00:00.000Z',
     'Input': {
-        'execution_id': test_failure_execution_id, 
+        'execution_id': test_failure_execution_id,
         'taskresult': {
-            'Error': 'States.TaskFailed', 
+            'Error': 'States.TaskFailed',
             'Cause': json.dumps(
                 {
                     "AllocatedCapacity": 50,
@@ -80,7 +82,7 @@ def use_moto():
     @mock_aws
     def dynamodb_client_and_audit_table():
         dynamodb = boto3.resource('dynamodb')
- 
+
         # KeySchema, AttributeDefinitions, and BillingMode should match
         # dynamodb table creation in dynamodb_stack
         table = dynamodb.create_table(

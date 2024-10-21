@@ -1,25 +1,32 @@
 # Copyright Amazon.com and its affiliates; all rights reserved. This file is Amazon Web Services Content and may not be duplicated or distributed without permission.
 # SPDX-License-Identifier: MIT-0
 import os
+
 import aws_cdk as cdk
-from constructs import Construct
 import aws_cdk.aws_dynamodb as dynamodb
-import aws_cdk.aws_logs as logs
 import aws_cdk.aws_glue as glue
 import aws_cdk.aws_iam as iam
 import aws_cdk.aws_lambda as _lambda
+import aws_cdk.aws_logs as logs
 import aws_cdk.aws_s3 as s3
 import aws_cdk.aws_s3_notifications as s3_notifications
 import aws_cdk.aws_sns as sns
 import aws_cdk.aws_stepfunctions as stepfunctions
 import aws_cdk.aws_stepfunctions_tasks as stepfunctions_tasks
 from cdk_nag import NagSuppressions
+from constructs import Construct
 
-from .stack_import_helper import ImportedBuckets
-from .configuration import (
-    DEV, PROD, TEST, STATE_MACHINE, NOTIFICATION_TOPIC,
-    get_logical_id_prefix, get_resource_name_prefix, get_environment_configuration,
+from ..configuration import (
+    DEV,
+    NOTIFICATION_TOPIC,
+    PROD,
+    STATE_MACHINE,
+    TEST,
+    get_environment_configuration,
+    get_logical_id_prefix,
+    get_resource_name_prefix,
 )
+from ..stack_import_helper import ImportedBuckets
 
 
 class StepFunctionsStack(cdk.Stack):
@@ -89,7 +96,7 @@ class StepFunctionsStack(cdk.Stack):
             logical_id_suffix='EtlStatusUpdate',
             resource_name_suffix='etl-status-update',
             function_description='ETL Step Functions workflow triggered handler to update DynamoDB in case of success or failure',
-            lambda_code_relative_path='etl_job_auditor',
+            lambda_code_relative_path='../etl_job_auditor',
             lambda_environment={
                 'DYNAMODB_TABLE_NAME': job_audit_table.table_name,
             },
@@ -227,7 +234,7 @@ class StepFunctionsStack(cdk.Stack):
             logical_id_suffix='EtlTrigger',
             resource_name_suffix='etl-trigger',
             function_description='Collect S3 Bucket triggered handler to trigger Step Functions workflow',
-            lambda_code_relative_path='state_machine_trigger',
+            lambda_code_relative_path='../state_machine_trigger',
             lambda_environment={
                 'DYNAMODB_TABLE_NAME': job_audit_table.table_name,
                 'SFN_STATE_MACHINE_ARN': machine.state_machine_arn,

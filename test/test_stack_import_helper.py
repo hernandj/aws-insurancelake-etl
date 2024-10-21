@@ -1,15 +1,13 @@
 # Copyright Amazon.com and its affiliates; all rights reserved. This file is Amazon Web Services Content and may not be duplicated or distributed without permission.
 # SPDX-License-Identifier: MIT-0
-import pytest
-import aws_cdk as cdk
-
 from test.boto_mocking_helper import *
-from lib.stack_import_helper import ImportedBuckets, ImportedVpc
+
+import aws_cdk as cdk
+import pytest
 
 import lib.configuration as configuration
-from lib.configuration import (
-    DEPLOYMENT, DEV, PROD, TEST, ACCOUNT_ID, REGION, VPC_CIDR, RESOURCE_NAME_PREFIX,
-)
+from lib.configuration import ACCOUNT_ID, DEPLOYMENT, DEV, PROD, REGION, RESOURCE_NAME_PREFIX, TEST, VPC_CIDR
+from lib.stack_import_helper import ImportedBuckets, ImportedVpc
 
 
 def test_importedbuckets_resource_counts(monkeypatch):

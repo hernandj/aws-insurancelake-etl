@@ -2,14 +2,14 @@
 # SPDX-License-Identifier: MIT-0
 import aws_cdk as cdk
 from constructs import Construct
-from .step_functions_stack import StepFunctionsStack
-from .glue_stack import GlueStack
-from .dynamodb_stack import DynamoDbStack
-from .athena_helper_stack import AthenaHelperStack
-from .tagging import tag
-from .configuration import (
-    get_logical_id_prefix,
-)
+
+from ..athena_helper_stack import AthenaHelperStack
+from ..configuration import get_logical_id_prefix
+from ..stacks.dynamodb_stack import DynamoDbStack
+from ..stacks.glue_stack import GlueStack
+from ..stacks.step_functions_stack import StepFunctionsStack
+from ..tagging import tag
+
 
 class PipelineDeployStage(cdk.Stage):
     def __init__(
