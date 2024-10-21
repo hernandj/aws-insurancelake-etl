@@ -46,13 +46,13 @@ class DynamoDbStack(cdk.Stack):
             self.removal_policy = cdk.RemovalPolicy.RETAIN
 
         # DynamoDB table to store audit log and step function state
-        self.job_audit_table = dynamodb.Table(
+        self.job_audit_table = dynamodb.TableV2(
             self,
             f'{target_environment}{logical_id_prefix}EtlAuditTable',
             table_name=f'{target_environment.lower()}-{resource_name_prefix}-etl-job-audit',
             partition_key=dynamodb.Attribute(name='execution_id', type=dynamodb.AttributeType.STRING),
-            billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST,
-            encryption=dynamodb.TableEncryption.DEFAULT,
+            billing=dynamodb.Billing.on_demand(),
+            encryption=dynamodb.TableEncryptionV2.dynamo_owned_key(),
             point_in_time_recovery=True,
             removal_policy=self.removal_policy,
             deletion_protection=True if self.removal_policy == cdk.RemovalPolicy.RETAIN else False,
@@ -60,14 +60,13 @@ class DynamoDbStack(cdk.Stack):
 
         # DynamoDB table to store raw data to hash value mapping
         # raw data stored in 'raw_data' column
-        self.hash_values_table = dynamodb.Table(
+        self.hash_values_table = dynamodb.TableV2(
             self,
             f'{target_environment}{logical_id_prefix}HashValuesTable',
             table_name=f'{target_environment.lower()}-{resource_name_prefix}-etl-hash-values',
             partition_key=dynamodb.Attribute(name='hash_key', type=dynamodb.AttributeType.STRING),
-            billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST,
-            encryption=dynamodb.TableEncryption.CUSTOMER_MANAGED,
-            encryption_key=buckets.s3_kms_key,
+            billing=dynamodb.Billing.on_demand(),
+            encryption=dynamodb.TableEncryptionV2.dynamo_owned_key(), #dynamodb.TableEncryptionV2.customer_managed_key(buckets.s3_kms_key),
             point_in_time_recovery=True,
             removal_policy=self.removal_policy,
             deletion_protection=True if self.removal_policy == cdk.RemovalPolicy.RETAIN else False,
@@ -75,14 +74,14 @@ class DynamoDbStack(cdk.Stack):
 
         # DynamoDB table to store lookup values for lookup transform
         # Lookup values stored in 'lookup_data' column
-        self.value_lookup_table = dynamodb.Table(
+        self.value_lookup_table = dynamodb.TableV2(
             self,
             f'{target_environment}{logical_id_prefix}ValueLookupTable',
             table_name=f'{target_environment.lower()}-{resource_name_prefix}-etl-value-lookup',
             partition_key=dynamodb.Attribute(name='source_system', type=dynamodb.AttributeType.STRING),
             sort_key=dynamodb.Attribute(name='column_name', type=dynamodb.AttributeType.STRING),
-            billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST,
-            encryption=dynamodb.TableEncryption.DEFAULT,
+            billing=dynamodb.Billing.on_demand(),
+            encryption=dynamodb.TableEncryptionV2.dynamo_owned_key(),
             point_in_time_recovery=True,
             removal_policy=self.removal_policy,
             deletion_protection=True if self.removal_policy == cdk.RemovalPolicy.RETAIN else False,
@@ -92,28 +91,28 @@ class DynamoDbStack(cdk.Stack):
         # lookup transform
         # Composite hash of all keys stored in 'lookup_item'
         # Lookup return values stored in user defined columns
-        self.multi_lookup_table = dynamodb.Table(
+        self.multi_lookup_table = dynamodb.TableV2(
             self,
             f'{target_environment}{logical_id_prefix}MultiValueLookupTable',
             table_name=f'{target_environment.lower()}-{resource_name_prefix}-etl-multi-lookup',
             partition_key=dynamodb.Attribute(name='lookup_group', type=dynamodb.AttributeType.STRING),
             sort_key=dynamodb.Attribute(name='lookup_item', type=dynamodb.AttributeType.STRING),
-            billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST,
-            encryption=dynamodb.TableEncryption.DEFAULT,
+            billing=dynamodb.Billing.on_demand(),
+            encryption=dynamodb.TableEncryptionV2.dynamo_owned_key(),
             point_in_time_recovery=True,
             removal_policy=self.removal_policy,
             deletion_protection=True if self.removal_policy == cdk.RemovalPolicy.RETAIN else False,
         )
 
         # DynamoDB table to store Glue Data Quality results
-        self.dq_results_table = dynamodb.Table(
+        self.dq_results_table = dynamodb.TableV2(
             self,
             f'{target_environment}{logical_id_prefix}DqResultsTable',
             table_name=f'{target_environment.lower()}-{resource_name_prefix}-etl-dq-results',
             partition_key=dynamodb.Attribute(name='execution_id', type=dynamodb.AttributeType.STRING),
             sort_key=dynamodb.Attribute(name='job_id_action_rule', type=dynamodb.AttributeType.STRING),
-            billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST,
-            encryption=dynamodb.TableEncryption.DEFAULT,
+            billing=dynamodb.Billing.on_demand(),
+            encryption=dynamodb.TableEncryptionV2.dynamo_owned_key(),
             point_in_time_recovery=True,
             removal_policy=self.removal_policy,
             deletion_protection=True if self.removal_policy == cdk.RemovalPolicy.RETAIN else False,
@@ -121,14 +120,14 @@ class DynamoDbStack(cdk.Stack):
 
         if self.mappings[LINEAGE]:
             # DynamoDB table to store custom data lineage logging per Step Function exection
-            self.data_lineage_table = dynamodb.Table(
+            self.data_lineage_table = dynamodb.TableV2(
                 self,
                 f'{target_environment}{logical_id_prefix}DataLineageTable',
                 table_name=f'{target_environment.lower()}-{resource_name_prefix}-etl-data-lineage',
                 partition_key=dynamodb.Attribute(name='step_function_execution_id', type=dynamodb.AttributeType.STRING),
                 sort_key=dynamodb.Attribute(name='job_id_operation_seq', type=dynamodb.AttributeType.STRING),
-                billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST,
-                encryption=dynamodb.TableEncryption.DEFAULT,
+                billing=dynamodb.Billing.on_demand(),
+                encryption=dynamodb.TableEncryptionV2.dynamo_owned_key(),
                 point_in_time_recovery=True,
                 removal_policy=self.removal_policy,
                 deletion_protection=True if self.removal_policy == cdk.RemovalPolicy.RETAIN else False,

@@ -37,12 +37,12 @@ def test_resource_types_and_counts_with_lineage(monkeypatch):
 	dynamodb_stack = DynamoDbStack(
 		app,
 		'Dev-DynamoDbStackForTests',
-		target_environment=DEV,
+		target_environment=TEST,
 	)
 	template = Template.from_stack(dynamodb_stack)
 
 	# Job audit table, lookup value data, multi lookup value, hash value table, dq results table, lineage table
-	template.resource_count_is('AWS::DynamoDB::Table', 6)
+	template.resource_count_is('AWS::DynamoDB::GlobalTable', 6)
 
 
 def test_resource_types_and_counts_without_lineage(monkeypatch):
@@ -58,7 +58,7 @@ def test_resource_types_and_counts_without_lineage(monkeypatch):
 	template = Template.from_stack(dynamodb_stack)
 
 	# Job audit table, lookup value data, multi lookup value, hash value table, dq results table
-	template.resource_count_is('AWS::DynamoDB::Table', 5)
+	template.resource_count_is('AWS::DynamoDB::GlobalTable', 5)
 
 
 def test_resource_types_and_counts_all_environments(monkeypatch):
@@ -78,43 +78,38 @@ def test_resource_types_and_counts_all_environments(monkeypatch):
 		template = Template.from_stack(dynamodb_stacks[environment])
 
 		# Job audit table, lookup value data, hash value table, dq results table regardless of configuration
-		template.has_resource_properties(
-			'AWS::DynamoDB::Table',
+		template.has_resource_properties('AWS::DynamoDB::GlobalTable',
 			Match.object_like(
 				{
-					"TableName": Match. string_like_regexp('job-audit')
+					"TableName": Match.string_like_regexp('job-audit')
 				}
 			)
 		)
-		template.has_resource_properties(
-			'AWS::DynamoDB::Table',
+		template.has_resource_properties('AWS::DynamoDB::GlobalTable',
 			Match.object_like(
 				{
-					"TableName": Match. string_like_regexp('value-lookup')
+					"TableName": Match.string_like_regexp('value-lookup')
 				}
 			)
 		)
-		template.has_resource_properties(
-			'AWS::DynamoDB::Table',
+		template.has_resource_properties('AWS::DynamoDB::GlobalTable',
 			Match.object_like(
 				{
-					"TableName": Match. string_like_regexp('multi-lookup')
+					"TableName": Match.string_like_regexp('multi-lookup')
 				}
 			)
 		)
-		template.has_resource_properties(
-			'AWS::DynamoDB::Table',
+		template.has_resource_properties('AWS::DynamoDB::GlobalTable',
 			Match.object_like(
 				{
-					"TableName": Match. string_like_regexp('hash-values')
+					"TableName": Match.string_like_regexp('hash-values')
 				}
 			)
 		)
-		template.has_resource_properties(
-			'AWS::DynamoDB::Table',
+		template.has_resource_properties('AWS::DynamoDB::GlobalTable',
 			Match.object_like(
 				{
-					"TableName": Match. string_like_regexp('dq-results')
+					"TableName": Match.string_like_regexp('dq-results')
 				}
 			)
 		)
