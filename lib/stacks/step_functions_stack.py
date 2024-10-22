@@ -106,14 +106,16 @@ class StepFunctionsStack(cdk.Stack):
         fail_state = stepfunctions.Fail(
             self,
             f'{target_environment}{self.logical_id_prefix}EtlFailedState',
+            state_name='ETL Failed State',
             cause='End of failure path, root cause from Glue task step',
             error='Error'
         )
-        success_state = stepfunctions.Succeed(self, f'{target_environment}{self.logical_id_prefix}EtlSucceededState')
+        success_state = stepfunctions.Succeed(self, f'{target_environment}{self.logical_id_prefix}EtlSucceededState', state_name='ETL Succeeded State')
 
         failure_function_task = stepfunctions_tasks.LambdaInvoke(
             self,
             f'{target_environment}{self.logical_id_prefix}EtlFailureJobAuditUpdateTask',
+            state_name='ETL Failure Job Audit Update Task',
             comment='Update DynamoDB Job Audit Table with failure result and error message',
             lambda_function=status_function,
             retry_on_service_exceptions=True,
@@ -124,6 +126,7 @@ class StepFunctionsStack(cdk.Stack):
         failure_notification_task = stepfunctions_tasks.SnsPublish(
             self,
             f'{target_environment}{self.logical_id_prefix}EtlFailurePublishTask',
+            state_name='ETL Failure Publish Task',
             topic=notification_topic,
             subject='Job Failed',
             message=stepfunctions.TaskInput.from_json_path_at('$')
@@ -134,6 +137,7 @@ class StepFunctionsStack(cdk.Stack):
         success_function_task = stepfunctions_tasks.LambdaInvoke(
             self,
             f'{target_environment}{self.logical_id_prefix}EtlSuccessJobAuditUpdateTask',
+            state_name='ETL Success Job Audit Update Task',
             comment='Update DynamoDB Job Audit Table with success result',
             lambda_function=status_function,
             retry_on_service_exceptions=True,
@@ -144,6 +148,7 @@ class StepFunctionsStack(cdk.Stack):
         success_task = stepfunctions_tasks.SnsPublish(
             self,
             f'{target_environment}{self.logical_id_prefix}EtlSuccessPublishTask',
+            state_name='ETL Success Publish Task',
             topic=notification_topic,
             subject='Job Completed',
             message=stepfunctions.TaskInput.from_json_path_at('$')
@@ -152,7 +157,8 @@ class StepFunctionsStack(cdk.Stack):
         success_task.next(success_state)
 
         glue_collect_task = self.get_glue_job_task(
-            'Collect', 'Collect to Cleanse data load and transform',
+            'Collect', 'Data Collect',
+            'Collect to Cleanse data load and transform',
             collect_to_cleanse_job.name, failure_function_task,
             arguments={
                 '--source_path.$': '$.source_path',
@@ -162,7 +168,8 @@ class StepFunctionsStack(cdk.Stack):
         )
 
         glue_cleanse_task = self.get_glue_job_task(
-            'Cleanse', 'Cleanse to Consume data load and transform',
+            'Cleanse', 'Data Cleanse',
+            'Cleanse to Consume data load and transform',
             cleanse_to_consume_job.name, failure_function_task,
             arguments={
                 '--source_database_name.$': '$.target_database_name',
@@ -174,12 +181,14 @@ class StepFunctionsStack(cdk.Stack):
         entity_match_choice = stepfunctions.Choice(
             self,
             f'{target_environment}{self.logical_id_prefix}EntityMatchChoice',
+            state_name='Entity Match Choice',
             comment='Decision node to perform Entity Matching based on workflow configuration'
         )
         entity_match_condition = stepfunctions.Condition.boolean_equals('$.entity_match', True)
 
         glue_entity_match_task = self.get_glue_job_task(
-            'EntityMatch', 'Consume data Entity Matching',
+            'EntityMatch', 'Entity Match',
+            'Consume data Entity Matching',
             consume_entity_match_job.name, failure_function_task,
             arguments={
                 '--database_name_prefix.$': '$.target_database_name',
@@ -281,6 +290,7 @@ class StepFunctionsStack(cdk.Stack):
     def get_glue_job_task(
         self,
         logical_id: str,
+        state_name: str,
         comment: str,
         job_name: str,
         failure_function: stepfunctions.TaskStateBase,
@@ -322,6 +332,7 @@ class StepFunctionsStack(cdk.Stack):
         glue_task = stepfunctions_tasks.GlueStartJobRun(
             self,
             f'{self.target_environment}{self.logical_id_prefix}{logical_id}GlueJobTask',
+            state_name=f'{state_name} Glue Job Task',
             glue_job_name=job_name,
             comment=comment,
             arguments=stepfunctions.TaskInput.from_object(merged_arguments),
