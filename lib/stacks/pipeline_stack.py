@@ -87,13 +87,12 @@ class PipelineStack(cdk.Stack):
         target_aws_env
             The CDK env variables used for stacks in the deploy stage
         """
-        code_build_env = codebuild.BuildEnvironment(
-            build_image=codebuild.LinuxBuildImage.STANDARD_7_0,
-            privileged=False
-        )
 
         code_build_opt = pipelines.CodeBuildOptions(
-            build_environment=code_build_env,
+            build_environment=codebuild.BuildEnvironment(
+                build_image=codebuild.LinuxBuildImage.STANDARD_7_0,
+                privileged=False
+            ),
             role_policy=[
                 iam.PolicyStatement(
                     sid='EtlPipelineSecretsManagerPolicy',
