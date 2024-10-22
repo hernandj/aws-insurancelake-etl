@@ -46,35 +46,35 @@ class PipelineDeployStage(cdk.Stage):
         )
         tag(dynamodb_stack, target_environment)
 
-        # glue_stack = GlueStack(
-        #     self,
-        #     f'{logical_id_prefix}EtlGlue',
-        #     description='InsuranceLake stack for Glue jobs to support the data pipeline (SO9489) (uksb-1tu7mtee2)',
-        #     target_environment=target_environment,
-        #     env=env,
-        #     hash_values_table=dynamodb_stack.hash_values_table,
-        #     value_lookup_table=dynamodb_stack.value_lookup_table,
-        #     multi_lookup_table=dynamodb_stack.multi_lookup_table,
-        #     dq_results_table=dynamodb_stack.dq_results_table,
-        #     data_lineage_table=dynamodb_stack.data_lineage_table,
-        #     **kwargs,
-        # )
-        # tag(glue_stack, target_environment)
+        glue_stack = GlueStack(
+            self,
+            f'{logical_id_prefix}EtlGlue',
+            description='InsuranceLake stack for Glue jobs to support the data pipeline (SO9489) (uksb-1tu7mtee2)',
+            target_environment=target_environment,
+            env=env,
+            hash_values_table=dynamodb_stack.hash_values_table,
+            value_lookup_table=dynamodb_stack.value_lookup_table,
+            multi_lookup_table=dynamodb_stack.multi_lookup_table,
+            dq_results_table=dynamodb_stack.dq_results_table,
+            data_lineage_table=dynamodb_stack.data_lineage_table,
+            **kwargs,
+        )
+        tag(glue_stack, target_environment)
 
-        # step_function_stack = StepFunctionsStack(
-        #     self,
-        #     f'{logical_id_prefix}EtlStepFunctions',
-        #     description='InsuranceLake stack for Step Functions and supporting Lambda functions to orchestrate data pipeline steps (SO9489) (uksb-1tu7mtee2)',
-        #     target_environment=target_environment,
-        #     env=env,
-        #     collect_to_cleanse_job=glue_stack.collect_to_cleanse_job,
-        #     cleanse_to_consume_job=glue_stack.cleanse_to_consume_job,
-        #     consume_entity_match_job=glue_stack.consume_entity_match_job,
-        #     job_audit_table=dynamodb_stack.job_audit_table,
-        #     glue_scripts_bucket=glue_stack.glue_scripts_bucket,
-        #     **kwargs,
-        # )
-        # tag(step_function_stack, target_environment)
+        step_function_stack = StepFunctionsStack(
+            self,
+            f'{logical_id_prefix}EtlStepFunctions',
+            description='InsuranceLake stack for Step Functions and supporting Lambda functions to orchestrate data pipeline steps (SO9489) (uksb-1tu7mtee2)',
+            target_environment=target_environment,
+            env=env,
+            collect_to_cleanse_job=glue_stack.collect_to_cleanse_job,
+            cleanse_to_consume_job=glue_stack.cleanse_to_consume_job,
+            consume_entity_match_job=glue_stack.consume_entity_match_job,
+            job_audit_table=dynamodb_stack.job_audit_table,
+            glue_scripts_bucket=glue_stack.glue_scripts_bucket,
+            **kwargs,
+        )
+        tag(step_function_stack, target_environment)
 
         # athena_helper_stack = AthenaHelperStack(
         #     self,

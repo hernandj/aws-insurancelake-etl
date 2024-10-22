@@ -12,11 +12,13 @@ from lib.configuration import (
     DEV,
     GITHUB_REPOSITORY_NAME,
     GITHUB_REPOSITORY_OWNER_NAME,
+    GLUE_VERSION,
     LINEAGE,
     LOGICAL_ID_PREFIX,
     PROD,
     REGION,
     RESOURCE_NAME_PREFIX,
+    SPARK_WORKER_TYPE,
     TEST,
 )
 from lib.stacks.pipeline_stack import PipelineStack
@@ -28,6 +30,8 @@ mock_configuration_base = {
     LOGICAL_ID_PREFIX: 'TestLake',
     RESOURCE_NAME_PREFIX: 'testlake',
     LINEAGE: True,
+    GLUE_VERSION: '4.0',
+    SPARK_WORKER_TYPE: 'G.1X',
 }
 
 def mock_get_local_configuration_with_github(environment, local_mapping = None):

@@ -20,8 +20,10 @@ from ..configuration import (
     PROD,
     TEST,
     get_environment_configuration,
+    get_glue_version,
     get_logical_id_prefix,
     get_resource_name_prefix,
+    get_spark_worker_type,
 )
 
 
@@ -70,6 +72,9 @@ class GlueStack(cdk.Stack):
         self.mappings = get_environment_configuration(target_environment)
         self.logical_id_prefix = get_logical_id_prefix()
         self.resource_name_prefix = get_resource_name_prefix()
+        self.glue_version = get_glue_version()
+        self.worker_type = get_spark_worker_type()
+
         if (target_environment == PROD or target_environment == TEST):
             self.removal_policy = cdk.RemovalPolicy.RETAIN
             self.log_retention = logs.RetentionDays.SIX_MONTHS
@@ -182,13 +187,13 @@ class GlueStack(cdk.Stack):
             execution_property=glue.CfnJob.ExecutionPropertyProperty(
                 max_concurrent_runs=10,
             ),
-            glue_version='4.0',
+            glue_version=self.glue_version,
             max_retries=0,
             # With auto-scaling, this represents the maximum number of workers
             # If using a Connection, there must be enough IP addresses for each worker
             number_of_workers=50,
             role=glue_role.role_arn,
-            worker_type='G.1X',
+            worker_type=self.worker_type,
             # TODO: Allow the user to specify a user-managed, out-of-stack security group name
             # Glue security configurations cannot be updated by Cloudformation and break all stack updates
             #security_configuration='',
@@ -221,13 +226,13 @@ class GlueStack(cdk.Stack):
             execution_property=glue.CfnJob.ExecutionPropertyProperty(
                 max_concurrent_runs=10,
             ),
-            glue_version='4.0',
+            glue_version=self.glue_version,
             max_retries=0,
             # With auto-scaling, this represents the maximum number of workers
             # If using a Connection, there must be enough IP addresses for each worker
             number_of_workers=50,
             role=glue_role.role_arn,
-            worker_type='G.1X',
+            worker_type=self.worker_type,
             # TODO: Allow the user to specify a user-managed, out-of-stack security group name
             # Glue security configurations cannot be updated by Cloudformation and break all stack updates
             #security_configuration='',
@@ -262,13 +267,13 @@ class GlueStack(cdk.Stack):
             execution_property=glue.CfnJob.ExecutionPropertyProperty(
                 max_concurrent_runs=10,
             ),
-            glue_version='4.0',
+            glue_version=self.glue_version,
             max_retries=0,
             # With auto-scaling, this represents the maximum number of workers
             # If using a Connection, there must be enough IP addresses for each worker
             number_of_workers=50,
             role=glue_role.role_arn,
-            worker_type='G.1X',
+            worker_type=self.worker_type,
         )
         # Recommended encryption settings for account Glue Data Catalog
         # Applies to all databases and tables in the account; uncomment to apply

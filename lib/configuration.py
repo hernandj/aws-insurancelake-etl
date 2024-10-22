@@ -55,6 +55,9 @@ NOTIFICATION_TOPIC = 'sns_topic'
 
 MAX_S3_BUCKET_NAME_LENGTH = 63
 
+GLUE_VERSION = 'glue_version'
+SPARK_WORKER_TYPE='spark_worker_type'
+
 def get_local_configuration(environment: str, local_mapping: dict = None) -> dict:
     """Provides manually configured variables that are validated for quality and safety
 
@@ -99,6 +102,9 @@ def get_local_configuration(environment: str, local_mapping: dict = None) -> dic
                 # Resource names may only contain alphanumeric characters, hyphens, and cannot contain trailing hyphens.
                 # S3 bucket names from this application must be under the 63 character bucket name limit
                 RESOURCE_NAME_PREFIX: 'insurancelake',
+
+                GLUE_VERSION: '4.0',
+                SPARK_WORKER_TYPE: 'G.1X',
             },
             DEV: {
                 ACCOUNT_ID: active_account_id,
@@ -231,3 +237,23 @@ def get_resource_name_prefix() -> str:
         Resource name prefix from deployment configuration
     """
     return get_local_configuration(DEPLOYMENT)[RESOURCE_NAME_PREFIX]
+
+def get_glue_version() -> str:
+    """Returns the supported glue version
+
+    Returns
+    -------
+    str
+        Glue version from deployment configuration
+    """
+    return get_local_configuration(DEPLOYMENT)[GLUE_VERSION]
+
+def get_spark_worker_type() -> str:
+    """Returns the supported spark worker type
+
+    Returns
+    -------
+    str
+        Spark worker type from deployment configuration
+    """
+    return get_local_configuration(DEPLOYMENT)[SPARK_WORKER_TYPE]

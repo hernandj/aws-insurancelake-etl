@@ -10,11 +10,13 @@ import lib.configuration as configuration
 from lib.configuration import (
     ACCOUNT_ID,
     DEV,
+    GLUE_VERSION,
     LINEAGE,
     LOGICAL_ID_PREFIX,
     PROD,
     REGION,
     RESOURCE_NAME_PREFIX,
+    SPARK_WORKER_TYPE,
     TEST,
     VPC_CIDR,
 )
@@ -31,6 +33,8 @@ def mock_get_local_configuration_with_vpc(environment, local_mapping = None):
 		LOGICAL_ID_PREFIX: 'TestLake',
 		RESOURCE_NAME_PREFIX: 'testlake',
 		VPC_CIDR: '10.0.0.0/24',
+        GLUE_VERSION: '4.0',
+        SPARK_WORKER_TYPE: 'G.1X',
 	}
 
 
