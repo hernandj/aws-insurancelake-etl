@@ -51,7 +51,9 @@ S3_CONFORMED_BUCKET = 's3_conformed_bucket'
 S3_PURPOSE_BUILT_BUCKET = 's3_purpose_built_bucket'
 CROSS_ACCOUNT_DYNAMODB_ROLE = 'cross_account_dynamodb_role'
 STATE_MACHINE = 'sfn_state_machine'
+
 NOTIFICATION_TOPIC = 'sns_topic'
+NOTIFICATION_EMAIL = 'notification_email'
 
 MAX_S3_BUCKET_NAME_LENGTH = 63
 
@@ -105,6 +107,7 @@ def get_local_configuration(environment: str, local_mapping: dict = None) -> dic
 
                 GLUE_VERSION: '4.0',
                 SPARK_WORKER_TYPE: 'G.1X',
+                NOTIFICATION_EMAIL: 'jose.hernandez151229@gmail.com',
             },
             DEV: {
                 ACCOUNT_ID: active_account_id,
@@ -257,3 +260,13 @@ def get_spark_worker_type() -> str:
         Spark worker type from deployment configuration
     """
     return get_local_configuration(DEPLOYMENT)[SPARK_WORKER_TYPE]
+
+def get_notification_email() -> str:
+    """Returns the DevOps notification email
+
+    Returns
+    -------
+    str
+        Notification email from deployment configuration
+    """
+    return get_local_configuration(DEPLOYMENT)[NOTIFICATION_EMAIL]

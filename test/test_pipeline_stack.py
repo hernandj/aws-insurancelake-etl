@@ -15,6 +15,7 @@ from lib.configuration import (
     GLUE_VERSION,
     LINEAGE,
     LOGICAL_ID_PREFIX,
+    NOTIFICATION_EMAIL,
     PROD,
     REGION,
     RESOURCE_NAME_PREFIX,
@@ -32,6 +33,7 @@ mock_configuration_base = {
     LINEAGE: True,
     GLUE_VERSION: '4.0',
     SPARK_WORKER_TYPE: 'G.1X',
+    NOTIFICATION_EMAIL: 'Fake-email@gmail.com',
 }
 
 def mock_get_local_configuration_with_github(environment, local_mapping = None):

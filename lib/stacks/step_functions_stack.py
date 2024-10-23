@@ -18,12 +18,14 @@ from constructs import Construct
 
 from ..configuration import (
     DEV,
+    NOTIFICATION_EMAIL,
     NOTIFICATION_TOPIC,
     PROD,
     STATE_MACHINE,
     TEST,
     get_environment_configuration,
     get_logical_id_prefix,
+    get_notification_email,
     get_resource_name_prefix,
 )
 from ..stack_import_helper import ImportedBuckets
@@ -68,6 +70,7 @@ class StepFunctionsStack(cdk.Stack):
         self.mappings = get_environment_configuration(target_environment)
         self.logical_id_prefix = get_logical_id_prefix()
         self.resource_name_prefix = get_resource_name_prefix()
+        self.notification_email = get_notification_email()
         if (target_environment == PROD or target_environment == TEST):
             self.removal_policy = cdk.RemovalPolicy.RETAIN
             self.log_retention = logs.RetentionDays.SIX_MONTHS
@@ -90,6 +93,14 @@ class StepFunctionsStack(cdk.Stack):
             topic_name=f'{target_environment.lower()}-{self.resource_name_prefix}-etl-notification-topic',
             display_name='InsuranceLake ETL Notifications Topic',
             master_key=buckets.s3_kms_key,
+        )
+
+        sns.Subscription(
+            self,
+            f'{target_environment}{self.logical_id_prefix}EtlNotificationTopicSubscription',
+            topic=notification_topic,
+            protocol=sns.SubscriptionProtocol.EMAIL,
+            endpoint=self.notification_email,
         )
 
         status_function = self.lambda_function_for_etl(
